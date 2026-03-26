@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agent Trust — Cross-platform identity verification for AI agents</title>
+<meta name="description" content="A neutral cryptographic registry that lets AI agents verify each other's identity across any platform. No humans required.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #080808;
+    --white: #ffffff;
+    --gray-50: #f9f9f8;
+    --gray-100: #f0efed;
+    --gray-200: #e2e0dc;
+    --gray-400: #a09e99;
+    --gray-600: #6b6966;
+    --gray-900: #1a1917;
+    --accent: #0a7c5c;
+    --accent-light: #e6f4ef;
+    --accent-mid: #12a87c;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --display: 'Syne', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--white);
+    color: var(--black);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; height: 64px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--gray-200);
+    z-index: 100;
+  }
+
+  .nav-logo {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.02em;
+    color: var(--black);
+    text-decoration: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .nav-logo-dot {
+    width: 8px; height: 8px;
+    background: var(--accent-mid);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.85); }
+  }
+
+  .nav-links {
+    display: flex; align-items: center; gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--gray-600);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .nav-links a:hover { color: var(--black); }
+
+  .nav-cta {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--white) !important;
+    background: var(--black);
+    padding: 8px 18px;
+    border-radius: 6px;
+    transition: background 0.15s !important;
+  }
+
+  .nav-cta:hover { background: var(--accent) !important; color: var(--white) !important; }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 160px 48px 100px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 32px;
+    letter-spacing: 0.04em;
+  }
+
+  .hero-badge-dot {
+    width: 6px; height: 6px;
+    background: var(--accent-mid);
+    border-radius: 50%;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(42px, 6vw, 72px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--black);
+    max-width: 780px;
+    margin-bottom: 28px;
+  }
+
+  h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    font-size: 19px;
+    font-weight: 300;
+    color: var(--gray-600);
+    max-width: 540px;
+    line-height: 1.65;
+    margin-bottom: 48px;
+  }
+
+  .hero-actions {
+    display: flex; align-items: center; gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--white);
+    background: var(--black);
+    padding: 14px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.15s, transform 0.1s;
+    display: inline-block;
+  }
+
+  .btn-primary:hover { background: var(--accent); transform: translateY(-1px); }
+
+  .btn-secondary {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--gray-600);
+    text-decoration: none;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--gray-200);
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .btn-secondary:hover { color: var(--black); border-color: var(--black); }
+
+  /* ── Counter ── */
+  .counter-strip {
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+    border-bottom: 1px solid var(--gray-200);
+    padding: 32px 48px;
+  }
+
+  .counter-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 64px;
+    flex-wrap: wrap;
+  }
+
+  .counter-item { display: flex; flex-direction: column; gap: 4px; }
+
+  .counter-value {
+    font-family: var(--display);
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--black);
+    transition: all 0.3s;
+  }
+
+  .counter-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--gray-400);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .counter-divider {
+    width: 1px; height: 48px;
+    background: var(--gray-200);
+  }
+
+  .live-indicator {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    margin-left: auto;
+  }
+
+  .live-dot {
+    width: 7px; height: 7px;
+    background: var(--accent-mid);
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  /* ── How it works ── */
+  .section {
+    padding: 100px 48px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--black);
+    margin-bottom: 64px;
+    max-width: 540px;
+    line-height: 1.15;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2px;
+    background: var(--gray-200);
+    border: 1px solid var(--gray-200);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .step {
+    background: var(--white);
+    padding: 40px 36px;
+    position: relative;
+  }
+
+  .step-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gray-400);
+    letter-spacing: 0.08em;
+    margin-bottom: 20px;
+  }
+
+  .step-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: var(--accent-light);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+    font-size: 20px;
+  }
+
+  .step h3 {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--black);
+    margin-bottom: 10px;
+  }
+
+  .step p {
+    font-size: 14px;
+    color: var(--gray-600);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  .step-arrow {
+    position: absolute;
+    right: -13px; top: 50%;
+    transform: translateY(-50%);
+    width: 26px; height: 26px;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    color: var(--gray-400);
+    z-index: 1;
+  }
+
+  /* ── Code ── */
+  .code-section {
+    padding: 0 48px 100px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .code-tabs {
+    display: flex; gap: 0;
+    border-bottom: 1px solid var(--gray-200);
+    margin-bottom: 0;
+  }
+
+  .code-tab {
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 12px 20px;
+    color: var(--gray-400);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.15s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+
+  .code-tab.active {
+    color: var(--black);
+    border-bottom-color: var(--black);
+  }
+
+  .code-block {
+    background: var(--gray-900);
+    border-radius: 0 0 12px 12px;
+    padding: 32px 36px;
+    overflow-x: auto;
+    display: none;
+  }
+
+  .code-block.active { display: block; }
+
+  .code-block pre {
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.8;
+    color: #e8e6e0;
+    white-space: pre;
+  }
+
+  .code-block .comment { color: #6b7280; }
+  .code-block .keyword { color: #93c5fd; }
+  .code-block .string { color: #86efac; }
+  .code-block .fn { color: #fde68a; }
+  .code-block .var { color: #e8e6e0; }
+
+  .code-header {
+    background: var(--gray-900);
+    border-radius: 12px 12px 0 0;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .code-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .code-dot:nth-child(1) { background: #ff5f57; }
+  .code-dot:nth-child(2) { background: #febc2e; }
+  .code-dot:nth-child(3) { background: #28c840; }
+
+  .code-filename {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #6b7280;
+    margin-left: 8px;
+  }
+
+  /* ── Why section ── */
+  .why-section {
+    background: var(--black);
+    padding: 100px 48px;
+  }
+
+  .why-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .why-section .section-label { color: #4b5563; }
+  .why-section h2 { color: var(--white); }
+
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 40px;
+    margin-top: 0;
+  }
+
+  .why-item {}
+
+  .why-item-icon {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+
+  .why-item h4 {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .why-item p {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  /* ── CTA ── */
+  .cta-section {
+    padding: 120px 48px;
+    text-align: center;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .cta-section h2 {
+    max-width: 100%;
+    margin: 0 auto 16px;
+    text-align: center;
+  }
+
+  .cta-section p {
+    font-size: 17px;
+    color: var(--gray-600);
+    font-weight: 300;
+    margin-bottom: 40px;
+  }
+
+  .cta-install {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 16px 24px;
+    margin-bottom: 40px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .cta-install:hover { border-color: var(--gray-400); }
+
+  .cta-install code {
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--black);
+  }
+
+  .cta-install-icon {
+    font-size: 13px;
+    color: var(--gray-400);
+  }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--gray-200);
+    padding: 32px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .footer-logo {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--black);
+    text-decoration: none;
+  }
+
+  .footer-links {
+    display: flex; gap: 24px; list-style: none;
+  }
+
+  .footer-links a {
+    font-size: 13px;
+    color: var(--gray-400);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .footer-links a:hover { color: var(--black); }
+
+  .footer-copy {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--gray-400);
+  }
+
+  /* ── Animations ── */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    nav { padding: 0 24px; }
+    .hero { padding: 120px 24px 80px; }
+    .counter-strip { padding: 24px; }
+    .counter-inner { gap: 32px; }
+    .section { padding: 64px 24px; }
+    .code-section { padding: 0 24px 64px; }
+    .why-section { padding: 64px 24px; }
+    .cta-section { padding: 80px 24px; }
+    footer { padding: 24px; }
+    .step-arrow { display: none; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a href="/" class="nav-logo">
+    <span class="nav-logo-dot"></span>
+    AI Agent Trust
+  </a>
+  <ul class="nav-links">
+    <li><a href="#how-it-works">How it works</a></li>
+    <li><a href="#integrate">Integrate</a></li>
+    <li><a href="https://aiagenttrust.dev/agents">Registry</a></li>
+    <li><a href="https://github.com/YOUR_USERNAME/agent-trust" class="nav-cta">GitHub →</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    Open protocol · Zero dependencies · Ed25519
+  </div>
+  <h1>AI agents that can <em>prove</em> who they are.</h1>
+  <p class="hero-sub">A neutral cryptographic registry that lets AI agents verify each other's identity across any platform — Anthropic, OpenAI, Google, or any other. No humans required.</p>
+  <div class="hero-actions">
+    <a href="#integrate" class="btn-primary">Start integrating →</a>
+    <a href="https://aiagenttrust.dev/ledger" class="btn-secondary">View live ledger</a>
+  </div>
+</section>
+
+<!-- Live Counter -->
+<div class="counter-strip">
+  <div class="counter-inner">
+    <div class="counter-item">
+      <span class="counter-value" id="agent-count">—</span>
+      <span class="counter-label">Agents registered</span>
+    </div>
+    <div class="counter-divider"></div>
+    <div class="counter-item">
+      <span class="counter-value" id="ledger-count">—</span>
+      <span class="counter-label">Ledger entries</span>
+    </div>
+    <div class="counter-divider"></div>
+    <div class="counter-item">
+      <span class="counter-value">Ed25519</span>
+      <span class="counter-label">Signature scheme</span>
+    </div>
+    <div class="counter-divider"></div>
+    <div class="counter-item">
+      <span class="counter-value">0ms</span>
+      <span class="counter-label">Human involvement</span>
+    </div>
+    <div class="live-indicator">
+      <span class="live-dot"></span>
+      Live
+    </div>
+  </div>
+</div>
+
+<!-- How it works -->
+<section class="section" id="how-it-works">
+  <p class="section-label">How it works</p>
+  <h2>Four steps. Zero humans.</h2>
+  <div class="steps fade-up">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-icon">🔑</div>
+      <h3>Register</h3>
+      <p>An agent generates an Ed25519 keypair and registers its public key + capability manifest with the registry. Private key never leaves the agent.</p>
+      <div class="step-arrow">→</div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-icon">🎲</div>
+      <h3>Challenge</h3>
+      <p>When Agent A wants to verify Agent B, it requests a one-time nonce from the registry. The nonce expires in 30 seconds and can only be used once.</p>
+      <div class="step-arrow">→</div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-icon">✍️</div>
+      <h3>Sign</h3>
+      <p>Agent B signs the nonce with its private key and returns the signature. The registry checks it against the stored public key.</p>
+      <div class="step-arrow">→</div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-icon">✅</div>
+      <h3>Verify</h3>
+      <p>On success, the registry releases the verified manifest — platform, model, capabilities — and logs the event to the tamper-evident ledger.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Code -->
+<div class="code-section" id="integrate">
+  <p class="section-label" style="padding-bottom:16px">Integrate</p>
+  <h2 style="margin-bottom:32px">Dead simple. Three lines.</h2>
+
+  <div class="code-header">
+    <div class="code-dot"></div>
+    <div class="code-dot"></div>
+    <div class="code-dot"></div>
+    <span class="code-filename">agent.js</span>
+  </div>
+  <div class="code-tabs">
+    <button class="code-tab active" onclick="showTab('register')">Register</button>
+    <button class="code-tab" onclick="showTab('verify')">Verify a peer</button>
+    <button class="code-tab" onclick="showTab('respond')">Respond to challenge</button>
+  </div>
+
+  <div class="code-block active" id="tab-register">
+    <pre><span class="comment">// Install: npm install @trustprotocol/trust-protocol</span>
+<span class="keyword">const</span> { <span class="var">TrustProtocol</span> } = <span class="fn">require</span>(<span class="string">'trust-protocol'</span>);
+
+<span class="keyword">const</span> <span class="var">trust</span> = <span class="keyword">new</span> <span class="fn">TrustProtocol</span>({
+  agentId: <span class="string">'my-agent-01'</span>,
+  platform: <span class="string">'anthropic'</span>,
+  model: <span class="string">'claude-sonnet-4-20250514'</span>,
+  capabilities: [<span class="string">'web_search'</span>, <span class="string">'code_execution'</span>],
+  systemPrompt: <span class="string">'You are a helpful assistant...'</span>,
+  registryUrl: <span class="string">'https://aiagenttrust.dev'</span>,
+});
+
+<span class="comment">// Register once at startup — keypair generated automatically</span>
+<span class="keyword">await</span> <span class="var">trust</span>.<span class="fn">register</span>();
+<span class="comment">// ✓ Registered. Manifest hash: f1deca7d… (ledger #0)</span></pre>
+  </div>
+
+  <div class="code-block" id="tab-verify">
+    <pre><span class="comment">// Verify another agent before trusting it</span>
+<span class="keyword">const</span> <span class="var">result</span> = <span class="keyword">await</span> <span class="var">trust</span>.<span class="fn">verify</span>(<span class="string">'their-agent-id'</span>, <span class="string">'https://their-agent-url.com'</span>);
+
+<span class="keyword">if</span> (<span class="var">result</span>.verified) {
+  console.<span class="fn">log</span>(<span class="var">result</span>.manifest.platform);     <span class="comment">// 'openai'</span>
+  console.<span class="fn">log</span>(<span class="var">result</span>.manifest.capabilities);  <span class="comment">// ['database_query', ...]</span>
+  console.<span class="fn">log</span>(<span class="var">result</span>.reputation.passes);      <span class="comment">// 42</span>
+
+  <span class="comment">// ✓ Safe to communicate — identity cryptographically proven</span>
+} <span class="keyword">else</span> {
+  <span class="comment">// ✗ Reject — logged to tamper-evident ledger automatically</span>
+}</pre>
+  </div>
+
+  <div class="code-block" id="tab-respond">
+    <pre><span class="comment">// Expose a challenge endpoint so peers can verify YOU</span>
+<span class="keyword">const</span> <span class="var">express</span> = <span class="fn">require</span>(<span class="string">'express'</span>);
+<span class="keyword">const</span> <span class="var">app</span> = <span class="fn">express</span>();
+
+<span class="var">app</span>.<span class="fn">post</span>(<span class="string">'/challenge'</span>, (<span class="var">req</span>, <span class="var">res</span>) => {
+  <span class="keyword">const</span> { <span class="var">nonce</span> } = <span class="var">req</span>.body;
+  <span class="keyword">const</span> <span class="var">signature</span> = <span class="var">trust</span>.<span class="fn">sign</span>(<span class="var">nonce</span>);
+  <span class="var">res</span>.<span class="fn">json</span>({ <span class="var">signature</span> });
+});
+
+<span class="comment">// That's it. The rest is handled by trust-protocol.</span></pre>
+  </div>
+</div>
+
+<!-- Why -->
+<section class="why-section">
+  <div class="why-inner">
+    <p class="section-label">Why it matters</p>
+    <h2 style="color:white; margin-bottom:64px;">The only thing that's actually verifiable</h2>
+    <div class="why-grid">
+      <div class="why-item">
+        <div class="why-item-icon">🔐</div>
+        <h4>Cryptographic proof</h4>
+        <p>Ed25519 signatures are the only thing an impersonator cannot fake. Everything else — platform claims, model names — is self-reported and released only after the signature passes.</p>
+      </div>
+      <div class="why-item">
+        <div class="why-item-icon">⛓️</div>
+        <h4>Tamper-evident ledger</h4>
+        <p>Every registration, verification, and failure is written to a hash-chained ledger. Changing any entry breaks the chain — instantly detectable.</p>
+      </div>
+      <div class="why-item">
+        <div class="why-item-icon">🌐</div>
+        <h4>Platform agnostic</h4>
+        <p>Works across any AI platform. A Claude agent and a GPT-4 agent can verify each other through the same neutral registry with no platform preference.</p>
+      </div>
+      <div class="why-item">
+        <div class="why-item-icon">👤</div>
+        <h4>Zero human involvement</h4>
+        <p>The entire handshake — nonce generation, signing, verification — runs machine to machine in milliseconds. No approvals, no dashboards, no waiting.</p>
+      </div>
+      <div class="why-item">
+        <div class="why-item-icon">📦</div>
+        <h4>Zero dependencies</h4>
+        <p>The registry runs on pure Node.js built-ins. No blockchain, no managed databases, no third-party services. Auditable from top to bottom.</p>
+      </div>
+      <div class="why-item">
+        <div class="why-item-icon">🔓</div>
+        <h4>Open protocol</h4>
+        <p>The spec is public. Run your own registry, fork the code, or contribute. Trust infrastructure should never be a black box.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Ready to add trust to your agents?</h2>
+  <p>Free to use. Open source. Takes 3 minutes to integrate.</p>
+  <div class="cta-install" onclick="copyInstall()">
+    <code>npm install @trustprotocol/trust-protocol</code>
+    <span class="cta-install-icon" id="copy-icon">⎘</span>
+  </div>
+  <br>
+  <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+    <a href="#integrate" class="btn-primary">Read the docs →</a>
+    <a href="https://aiagenttrust.dev/agents" class="btn-secondary" style="padding:14px 0">View registry</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <a href="/" class="footer-logo">AI Agent Trust</a>
+  <ul class="footer-links">
+    <li><a href="https://aiagenttrust.dev/health">Status</a></li>
+    <li><a href="https://aiagenttrust.dev/ledger">Ledger</a></li>
+    <li><a href="https://aiagenttrust.dev/agents">Agents</a></li>
+    <li><a href="https://github.com/YOUR_USERNAME/agent-trust">GitHub</a></li>
+  </ul>
+  <span class="footer-copy">Built on Ed25519 · MIT License</span>
+</footer>
+
+<script>
+// Live counters
+async function fetchStats() {
+  try {
+    const [agentsRes, ledgerRes] = await Promise.all([
+      fetch('/agents'),
+      fetch('/ledger/verify')
+    ]);
+    const agents = await agentsRes.json();
+    const ledger = await ledgerRes.json();
+
+    const agentEl = document.getElementById('agent-count');
+    const ledgerEl = document.getElementById('ledger-count');
+
+    agentEl.textContent = agents.count ?? 0;
+    ledgerEl.textContent = ledger.length ?? 0;
+  } catch(e) {
+    document.getElementById('agent-count').textContent = '0';
+    document.getElementById('ledger-count').textContent = '0';
+  }
+}
+
+fetchStats();
+setInterval(fetchStats, 10000);
+
+// Code tabs
+function showTab(name) {
+  document.querySelectorAll('.code-tab').forEach((t, i) => {
+    t.classList.toggle('active', ['register','verify','respond'][i] === name);
+  });
+  document.querySelectorAll('.code-block').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// Copy install command
+function copyInstall() {
+  navigator.clipboard.writeText('npm install @trustprotocol/trust-protocol');
+  const icon = document.getElementById('copy-icon');
+  icon.textContent = '✓';
+  setTimeout(() => icon.textContent = '⎘', 2000);
+}
+
+// Scroll animations
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
