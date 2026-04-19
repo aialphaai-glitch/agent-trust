@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>__NAME__ · Trust Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050812;
+    --bg-elev: #0a0f1e;
+    --bg-card: #0d1427;
+    --border: #1a2540;
+    --border-hot: #2a4a7a;
+    --text: #d8e4f8;
+    --text-dim: #7090b8;
+    --text-faint: #3a5070;
+    --accent: #4a9eff;
+    --accent-glow: rgba(74, 158, 255, 0.15);
+    --verified: #1aad7c;
+    --verified-glow: rgba(26, 173, 124, 0.2);
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(26, 90, 255, 0.08) 0%, transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(26, 173, 124, 0.05) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.008) 2px, rgba(255,255,255,0.008) 3px);
+    pointer-events: none; z-index: 1;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 60px 32px; position: relative; z-index: 2; }
+
+  /* Header mark */
+  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 80px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.15em; color: var(--text-faint); text-transform: uppercase; }
+  .brand-mark {
+    width: 24px; height: 24px;
+    background: linear-gradient(135deg, #0e2a6e, var(--accent));
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: white;
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+
+  /* Hero */
+  .hero { margin-bottom: 48px; }
+  .hero-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .hero-label::before {
+    content: ''; width: 24px; height: 1px; background: var(--accent);
+  }
+  .name {
+    font-family: var(--serif);
+    font-size: clamp(44px, 6vw, 72px);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 20px;
+    font-variation-settings: 'opsz' 144;
+  }
+  .name em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 300;
+  }
+  .did-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .did-row:hover { border-color: var(--border-hot); color: var(--text); }
+  .did-row .copy-icon { font-size: 11px; color: var(--text-faint); }
+
+  /* Status bar */
+  .status-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 56px;
+  }
+  .stat { background: var(--bg-elev); padding: 24px 22px; }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 10px;
+  }
+  .stat-value {
+    font-family: var(--serif);
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variation-settings: 'opsz' 144;
+  }
+  .stat-value.verified { color: var(--verified); }
+  .stat-value.pending { color: var(--text-dim); }
+  .stat-sub {
+    font-size: 12px;
+    color: var(--text-faint);
+    margin-top: 6px;
+  }
+
+  /* Verification seal */
+  .seal {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 22px;
+    background: linear-gradient(90deg, var(--verified-glow), transparent);
+    border: 1px solid rgba(26, 173, 124, 0.3);
+    border-radius: 8px;
+    margin-bottom: 56px;
+  }
+  .seal-icon {
+    width: 36px; height: 36px;
+    background: var(--verified);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 0 16px var(--verified-glow);
+  }
+  .seal-text strong { font-family: var(--serif); font-weight: 600; font-size: 16px; color: var(--text); }
+  .seal-text div { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+
+  /* Section */
+  .section-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .section-title span { color: var(--text-dim); }
+
+  /* Attestation cards */
+  .attestation {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin-bottom: 14px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .attestation:hover { border-color: var(--border-hot); transform: translateX(2px); }
+  .att-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 14px; }
+  .att-type {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    text-transform: uppercase;
+    background: var(--accent-glow);
+    padding: 3px 9px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+  .att-verify {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--verified);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .att-verify::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--verified);
+    box-shadow: 0 0 8px var(--verified);
+  }
+  .att-claim {
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--text);
+    margin-bottom: 12px;
+    font-variation-settings: 'opsz' 24;
+  }
+  .att-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px 20px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+  .att-meta div span { color: var(--text-dim); }
+
+  /* Footer */
+  footer {
+    margin-top: 80px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  .loading { color: var(--text-faint); font-family: var(--mono); font-size: 13px; padding: 20px 0; }
+  @keyframes shimmer { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+  .loading { animation: shimmer 1.5s ease-in-out infinite; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--verified); color: white; padding: 10px 18px; border-radius: 6px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.05em;
+    opacity: 0; transition: opacity 0.3s;
+    box-shadow: 0 0 20px var(--verified-glow);
+  }
+  .toast.show { opacity: 1; }
+
+  /* Sandbox banner */
+  .sandbox-banner {
+    background: rgba(255, 176, 32, 0.08);
+    border: 1px solid rgba(255, 176, 32, 0.3);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 32px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: #e8c070;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sandbox-banner strong { color: #ffcf72; font-weight: 600; letter-spacing: 0.1em; }
+  .sandbox-banner span { color: #b89a60; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <div class="brand-mark">⬡</div>
+    <span>Agent Trust Protocol — Verified Profile</span>
+  </div>
+
+  <div class="sandbox-banner">
+    <strong>v0.1 SANDBOX</strong>
+    <span>Reference deployment. Ledger operators are colocated and data may be reset. Not production.</span>
+  </div>
+
+  <div class="hero">
+    <div class="hero-label">Autonomous Agent</div>
+    <h1 class="name" id="agent-name">__NAME__</h1>
+    <div class="did-row" onclick="copyDID()">
+      <span id="agent-did">__DID__</span>
+      <span class="copy-icon">COPY</span>
+    </div>
+  </div>
+
+  <div class="seal">
+    <div class="seal-icon">✓</div>
+    <div class="seal-text">
+      <strong>All attestations cryptographically verified</strong>
+      <div>Signatures checked against issuer DID documents, M-of-N ledger operator threshold met</div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="stat">
+      <div class="stat-label">Attestations</div>
+      <div class="stat-value" id="stat-total">—</div>
+      <div class="stat-sub">On-ledger</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Verified</div>
+      <div class="stat-value verified" id="stat-verified">—</div>
+      <div class="stat-sub">Signature valid</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Score</div>
+      <div class="stat-value" id="stat-score">—</div>
+      <div class="stat-sub">Reference scoring</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Issuers</div>
+      <div class="stat-value" id="stat-issuers">—</div>
+      <div class="stat-sub">Distinct attesters</div>
+    </div>
+  </div>
+
+  <div class="section-title">Attestation Log <span id="att-count"></span></div>
+  <div id="attestations"><div class="loading">Fetching from ledger…</div></div>
+
+  <footer>
+    <div>Verified via Agent Trust Protocol v0.1 sandbox</div>
+    <div><a href="https://aiagenttrust.dev" target="_top">How this works →</a></div>
+  </footer>
+</div>
+
+<div class="toast" id="toast">DID copied</div>
+
+<script>
+function copyDID() {
+  navigator.clipboard.writeText(document.getElementById('agent-did').textContent);
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1500);
+}
+
+function formatClaim(claim) {
+  if (!claim) return '—';
+  const v = claim.value;
+  if (typeof v === 'object' && v !== null) {
+    if (v.task) return `Completed <em>${v.task}</em>${v.outcome ? ` — ${v.outcome}` : ''}`;
+    if (v.capability) return `Capability asserted: <em>${v.capability}</em>`;
+    if (v.observed_quality) return `Observation of <em>${v.task || 'behavior'}</em>: ${v.observed_quality} quality`;
+    return JSON.stringify(v);
+  }
+  return String(v);
+}
+
+function shortDID(did) {
+  if (!did) return '';
+  if (did.length <= 40) return did;
+  return did.slice(0, 24) + '…' + did.slice(-8);
+}
+
+async function load() {
+  try {
+    const res = await fetch('/api/profile');
+    const data = await res.json();
+    const atts = data.attestations || [];
+
+    document.getElementById('stat-total').textContent = atts.length;
+    document.getElementById('stat-verified').textContent = data.verified_count;
+    document.getElementById('stat-score').textContent = data.score.toFixed(1);
+    document.getElementById('stat-issuers').textContent = new Set(atts.map(a => a.issuer)).size;
+
+    const container = document.getElementById('attestations');
+    document.getElementById('att-count').textContent = atts.length ? `${atts.length} total` : '';
+
+    if (atts.length === 0) {
+      container.innerHTML = '<div class="loading">No attestations yet.</div>';
+      return;
+    }
+
+    container.innerHTML = atts.map(a => {
+      const type = a.credentialSubject?.claim?.type || 'unknown';
+      const claim = a.credentialSubject?.claim;
+      const date = new Date(a.issuanceDate).toLocaleString();
+      return `
+        <div class="attestation">
+          <div class="att-head">
+            <span class="att-type">${type.replace(/_/g, ' ')}</span>
+            <span class="att-verify">Signature valid</span>
+          </div>
+          <div class="att-claim">${formatClaim(claim)}</div>
+          <div class="att-meta">
+            <div><span>Issuer</span> ${shortDID(a.issuer)}</div>
+            <div><span>Issued</span> ${date}</div>
+            <div><span>Proof</span> JsonWebSignature2020</div>
+            ${claim?.context ? `<div><span>Context</span> ${claim.context}</div>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    document.getElementById('attestations').innerHTML =
+      `<div class="loading" style="color:#e05555">Error loading profile: ${e.message}</div>`;
+  }
+}
+load();
+</script>
+</body>
+</html>

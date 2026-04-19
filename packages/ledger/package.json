@@ -1,0 +1,16 @@
+{
+  "name": "@atp/ledger",
+  "version": "0.1.0",
+  "description": "Reference ledger implementation — Merkle batching + federated signing",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "tsx src/server.ts"
+  },
+  "dependencies": {
+    "@atp/sdk": "*",
+    "@noble/hashes": "^1.4.0"
+  }
+}

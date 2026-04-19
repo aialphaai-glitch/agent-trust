@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATP Trust Badge</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: transparent; font-family: 'Inter', system-ui, sans-serif; }
+  .badge {
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(135deg, #080d1a 0%, #0d1629 100%);
+    border: 1px solid #1e3058;
+    border-radius: 10px;
+    padding: 12px 16px;
+    width: 320px;
+    color: #d8e4f8;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s;
+  }
+  .badge:hover { border-color: #2e4d8a; }
+  .badge::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, #4a9eff, transparent);
+    opacity: 0.6;
+  }
+  .mark {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, #0e2a6e, #1a5aff);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: white; font-weight: 700;
+    box-shadow: 0 0 14px rgba(74, 158, 255, 0.4);
+    position: relative;
+  }
+  .mark::after {
+    content: '✓';
+    position: absolute; bottom: -3px; right: -3px;
+    width: 15px; height: 15px;
+    background: #1aad7c;
+    border-radius: 50%; border: 2px solid #080d1a;
+    font-size: 9px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700;
+  }
+  .content { flex: 1; min-width: 0; }
+  .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #4a9eff;
+    margin-bottom: 3px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .label::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%;
+    background: #1aad7c; box-shadow: 0 0 6px #1aad7c;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  .name {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #e8f0ff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 2px;
+  }
+  .did {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #5a7ba8;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .score {
+    flex-shrink: 0;
+    text-align: right;
+    padding-left: 8px;
+    border-left: 1px solid #1a2540;
+  }
+  .score-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1aad7c;
+    line-height: 1;
+  }
+  .score-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #3a5070;
+    margin-top: 3px;
+  }
+</style>
+</head>
+<body>
+<a class="badge" href="/" target="_top" id="badge">
+  <div class="mark">⬡</div>
+  <div class="content">
+    <div class="label">ATP Verified · v0.1 sandbox</div>
+    <div class="name" id="name">__NAME__</div>
+    <div class="did" id="did">__DID__</div>
+  </div>
+  <div class="score">
+    <div class="score-num" id="score">—</div>
+    <div class="score-label">score</div>
+  </div>
+</a>
+<script>
+fetch('/api/profile').then(r => r.json()).then(d => {
+  document.getElementById('score').textContent = d.score.toFixed(0);
+  const did = d.agent.did;
+  document.getElementById('did').textContent = did.length > 32 ? did.slice(0, 20) + '…' + did.slice(-6) : did;
+}).catch(() => {});
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+[Unit]
+Description=Agent Trust Protocol — Reference Agent Profile (v0.1 sandbox)
+Documentation=https://aiagenttrust.dev
+After=network-online.target atp-ledger.service
+Wants=network-online.target
+Requires=atp-ledger.service
+
+[Service]
+Type=simple
+User=atp
+Group=atp
+WorkingDirectory=/opt/atp/agent-trust-protocol/examples/reference-agent
+Environment=NODE_ENV=production
+Environment=PORT=4546
+ExecStart=/usr/bin/node dist/server.js
+Restart=on-failure
+RestartSec=3s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=atp-profile
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/atp/agent-trust-protocol/examples/reference-agent
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,18 @@
+{
+  "name": "@atp/mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server exposing the Agent Trust Protocol as tools",
+  "type": "module",
+  "bin": { "atp-mcp-server": "dist/index.js" },
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@atp/sdk": "*",
+    "zod": "^3.23.0"
+  }
+}

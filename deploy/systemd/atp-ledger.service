@@ -1,0 +1,37 @@
+[Unit]
+Description=Agent Trust Protocol — Reference Ledger (v0.1 sandbox)
+Documentation=https://aiagenttrust.dev
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=atp
+Group=atp
+WorkingDirectory=/opt/atp/agent-trust-protocol
+Environment=NODE_ENV=production
+Environment=PORT=4545
+Environment=LEDGER_DATA_DIR=/var/lib/atp/ledger
+ExecStart=/usr/bin/node packages/ledger/dist/server.js
+Restart=on-failure
+RestartSec=3s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=atp-ledger
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/atp/ledger
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=false
+
+[Install]
+WantedBy=multi-user.target
