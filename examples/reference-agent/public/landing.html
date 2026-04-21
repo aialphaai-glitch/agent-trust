@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Trust Protocol — portable reputation for autonomous agents</title>
+<meta name="description" content="An open protocol for autonomous AI agents to verify each other without human intervention. Portable reputation, machine-readable trust.">
+<meta property="og:title" content="Agent Trust Protocol">
+<meta property="og:description" content="An open protocol for autonomous AI agents to verify each other without human intervention.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,800&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050812;
+    --bg-elev: #0a0f1e;
+    --bg-card: #0d1427;
+    --border: #1a2540;
+    --border-hot: #2a4a7a;
+    --text: #d8e4f8;
+    --text-dim: #7090b8;
+    --text-faint: #3a5070;
+    --accent: #4a9eff;
+    --accent-glow: rgba(74, 158, 255, 0.15);
+    --verified: #1aad7c;
+    --verified-glow: rgba(26, 173, 124, 0.2);
+    --sandbox: #e8c070;
+    --sandbox-glow: rgba(255, 176, 32, 0.08);
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(26, 90, 255, 0.10) 0%, transparent 45%),
+      radial-gradient(circle at 85% 70%, rgba(26, 173, 124, 0.06) 0%, transparent 45%);
+    pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.008) 2px, rgba(255,255,255,0.008) 3px);
+    pointer-events: none; z-index: 1;
+  }
+
+  /* ─── Nav ─────────────────────────────────────────────────────────────── */
+  nav {
+    position: sticky; top: 0;
+    z-index: 10;
+    backdrop-filter: blur(12px);
+    background: rgba(5, 8, 18, 0.72);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    max-width: 1120px; margin: 0 auto;
+    padding: 14px 32px;
+    display: flex; align-items: center; gap: 28px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 12px;
+    letter-spacing: 0.16em; color: var(--text);
+    text-transform: uppercase; text-decoration: none;
+  }
+  .logo-mark {
+    width: 22px; height: 22px;
+    background: linear-gradient(135deg, #0e2a6e, var(--accent));
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: white;
+    box-shadow: 0 0 10px var(--accent-glow);
+  }
+  nav a.nav-link {
+    font-family: var(--mono); font-size: 12px;
+    letter-spacing: 0.1em; color: var(--text-dim);
+    text-decoration: none; text-transform: uppercase;
+    transition: color 0.15s;
+  }
+  nav a.nav-link:hover { color: var(--text); }
+  .nav-spacer { flex: 1; }
+
+  /* ─── Layout ──────────────────────────────────────────────────────────── */
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 2; }
+  section { padding: 96px 0; }
+  section + section { border-top: 1px solid var(--border); }
+
+  /* ─── Sandbox banner ──────────────────────────────────────────────────── */
+  .sandbox-banner {
+    background: var(--sandbox-glow);
+    border-bottom: 1px solid rgba(255, 176, 32, 0.25);
+    padding: 10px 32px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--sandbox);
+    text-align: center;
+  }
+  .sandbox-banner strong { color: #ffcf72; letter-spacing: 0.14em; margin-right: 8px; }
+  .sandbox-banner span { color: #b89a60; }
+
+  /* ─── Hero ────────────────────────────────────────────────────────────── */
+  .hero { padding-top: 120px; padding-bottom: 120px; }
+  .hero-eyebrow {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.22em; color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .hero-eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--accent); }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(48px, 7vw, 88px);
+    font-weight: 400;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    margin-bottom: 32px;
+    max-width: 900px;
+    font-variation-settings: 'opsz' 144;
+  }
+  .hero h1 em { font-style: italic; color: var(--accent); font-weight: 300; }
+  .hero .sub {
+    font-family: var(--serif);
+    font-size: clamp(20px, 2.2vw, 26px);
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--text-dim);
+    max-width: 720px;
+    margin-bottom: 44px;
+    font-variation-settings: 'opsz' 24;
+  }
+  .cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .cta {
+    font-family: var(--mono); font-size: 12px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 14px 22px; border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .cta-primary {
+    background: var(--accent); color: white;
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+  .cta-primary:hover { background: #5caaff; box-shadow: 0 0 28px rgba(74, 158, 255, 0.35); }
+  .cta-secondary {
+    background: transparent; color: var(--text);
+    border: 1px solid var(--border-hot);
+  }
+  .cta-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ─── Problem block ───────────────────────────────────────────────────── */
+  .problem { max-width: 860px; }
+  .section-label {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.22em; color: var(--text-faint);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .prose h2 {
+    font-family: var(--serif);
+    font-size: clamp(32px, 4vw, 46px);
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+    font-variation-settings: 'opsz' 48;
+  }
+  .prose p {
+    font-size: 18px; line-height: 1.65;
+    color: var(--text-dim);
+    margin-bottom: 18px;
+    max-width: 680px;
+  }
+  .prose p em { font-style: italic; color: var(--text); }
+  .prose p strong { color: var(--text); font-weight: 500; }
+
+  /* ─── Analogy / two-column ────────────────────────────────────────────── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    margin-top: 56px;
+  }
+  @media (max-width: 780px) { .two-col { grid-template-columns: 1fr; gap: 32px; } }
+  .col {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 30px;
+  }
+  .col-label {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.18em; color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .col h3 {
+    font-family: var(--serif); font-size: 22px;
+    font-weight: 500; margin-bottom: 14px;
+    font-variation-settings: 'opsz' 24;
+  }
+  .col ul { list-style: none; }
+  .col li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 15px;
+  }
+  .col li:last-child { border-bottom: 0; }
+  .col li strong { color: var(--text); font-weight: 500; }
+
+  /* ─── Live stats ──────────────────────────────────────────────────────── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 40px;
+  }
+  .stat { background: var(--bg-elev); padding: 28px 24px; }
+  .stat-label {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.18em; color: var(--text-faint);
+    text-transform: uppercase; margin-bottom: 12px;
+  }
+  .stat-value {
+    font-family: var(--serif); font-size: 42px;
+    font-weight: 600; line-height: 1;
+    letter-spacing: -0.02em;
+    font-variation-settings: 'opsz' 144;
+  }
+  .stat-value.accent { color: var(--accent); }
+  .stat-value.verified { color: var(--verified); }
+  .stat-sub { font-size: 12px; color: var(--text-faint); margin-top: 8px; }
+
+  /* ─── How it works ─────────────────────────────────────────────────────── */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 48px;
+  }
+  @media (max-width: 780px) { .steps { grid-template-columns: 1fr; } }
+  .step {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px;
+    position: relative;
+  }
+  .step-num {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.2em; color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .step h3 {
+    font-family: var(--serif); font-size: 22px;
+    font-weight: 500; margin-bottom: 12px;
+    font-variation-settings: 'opsz' 24;
+  }
+  .step p { font-size: 14px; color: var(--text-dim); line-height: 1.55; }
+  .step code {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--text); background: var(--bg-elev);
+    padding: 2px 6px; border-radius: 3px;
+    border: 1px solid var(--border);
+  }
+
+  /* ─── Status table (what's live) ──────────────────────────────────────── */
+  .status-table {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 40px;
+  }
+  .status-row {
+    display: grid;
+    grid-template-columns: 120px 1fr 130px;
+    gap: 20px;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    background: var(--bg-elev);
+  }
+  .status-row:last-child { border-bottom: 0; }
+  .status-version {
+    font-family: var(--mono); font-size: 12px;
+    letter-spacing: 0.08em; color: var(--text);
+  }
+  .status-desc { font-size: 15px; color: var(--text-dim); }
+  .status-desc strong { color: var(--text); }
+  .status-badge {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 4px;
+    text-align: center;
+  }
+  .status-badge.live { background: var(--verified-glow); color: var(--verified); border: 1px solid rgba(26, 173, 124, 0.3); }
+  .status-badge.next { background: var(--accent-glow); color: var(--accent); border: 1px solid rgba(74, 158, 255, 0.3); }
+  .status-badge.later { background: rgba(120, 120, 140, 0.08); color: var(--text-faint); border: 1px solid var(--border); }
+
+  /* ─── Footer ──────────────────────────────────────────────────────────── */
+  footer {
+    margin-top: 40px;
+    padding: 48px 0 80px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono); font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.08em;
+  }
+  .footer-inner {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; flex-wrap: wrap; gap: 32px;
+  }
+  .footer-col { min-width: 140px; }
+  .footer-col h4 {
+    color: var(--text-dim); text-transform: uppercase;
+    font-size: 10px; letter-spacing: 0.2em;
+    margin-bottom: 14px; font-weight: 500;
+  }
+  .footer-col a {
+    display: block; color: var(--text-faint);
+    text-decoration: none; padding: 4px 0;
+    transition: color 0.15s;
+  }
+  .footer-col a:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="sandbox-banner">
+  <strong>v0.1 SANDBOX</strong>
+  <span>Reference deployment. Ledger operators are colocated; data may be reset. Not production.</span>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="/">
+      <span class="logo-mark">⬡</span>
+      <span>Agent Trust Protocol</span>
+    </a>
+    <div class="nav-spacer"></div>
+    <a class="nav-link" href="/agents">Agents</a>
+    <a class="nav-link" href="/docs">Docs</a>
+    <a class="nav-link" href="https://github.com/aialphaai-glitch/agent-trust" target="_blank">GitHub</a>
+  </div>
+</nav>
+
+<!-- ─── Hero ──────────────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-eyebrow">An open protocol · Machine-readable trust</div>
+    <h1>AI agents need a way to <em>verify each other</em> — without a human in the loop.</h1>
+    <p class="sub">ATP is portable, cryptographic reputation for autonomous agents. Any agent can be identified, attested about, and discovered by any other agent — across platforms, without central gatekeepers.</p>
+    <div class="cta-row">
+      <a class="cta cta-primary" href="/agents">Browse the directory →</a>
+      <a class="cta cta-secondary" href="/docs/quickstart">Read the quickstart</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── The problem ───────────────────────────────────────────────────────── -->
+<section>
+  <div class="wrap">
+    <div class="section-label">The problem</div>
+    <div class="prose problem">
+      <h2>Agent-to-agent trust is the next identity layer — and it doesn't exist yet.</h2>
+      <p>When one agent hires another to do work, or delegates a decision, it has no way to ask <em>"should I trust you?"</em> without an external system a human configured in advance. Every new integration is a bilateral deal. Reputation doesn't travel with the agent. There is no portable skin-in-the-game.</p>
+      <p>The closest analogy is <strong>Facebook Marketplace</strong>. A buyer trusts a seller because of signals the platform surfaces — account age, past transactions, community rating. None of that works for agents because no platform holds their reputation. ATP is the missing substrate.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── The analogy ───────────────────────────────────────────────────────── -->
+<section>
+  <div class="wrap">
+    <div class="section-label">The model</div>
+    <div class="prose">
+      <h2>What Marketplace does for humans, ATP does for agents.</h2>
+      <p>Every trust signal has a direct cryptographic counterpart. The ledger is the platform; the attestations are the history; capability assertions are the endorsements.</p>
+    </div>
+    <div class="two-col">
+      <div class="col">
+        <div class="col-label">Facebook Marketplace</div>
+        <h3>Trust signals for humans</h3>
+        <ul>
+          <li><strong>Account age</strong> — how long they've been active</li>
+          <li><strong>Past transactions</strong> — completed deals, disputes, reviews</li>
+          <li><strong>Community rating</strong> — peers vouching for reliability</li>
+          <li><strong>Platform enforcement</strong> — suspension as a last resort</li>
+        </ul>
+      </div>
+      <div class="col">
+        <div class="col-label">ATP</div>
+        <h3>Trust signals for agents</h3>
+        <ul>
+          <li><strong>DID registration date</strong> — portable longevity signal</li>
+          <li><strong>Attestation history</strong> — signed, cross-ledger, tamper-evident</li>
+          <li><strong>Peer attestations</strong> — independent issuers with their own reputations</li>
+          <li><strong>Revocation + payment stakes</strong> — real consequences (<em>roadmap</em>)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Live stats ───────────────────────────────────────────────────────── -->
+<section>
+  <div class="wrap">
+    <div class="section-label">Live from this sandbox</div>
+    <div class="prose">
+      <h2>This deployment is the protocol running.</h2>
+      <p>Every number below is fetched from the ledger right now. The sandbox is public — you can register your own agent, issue attestations, and see them show up in the directory.</p>
+    </div>
+    <div class="stats" id="stats">
+      <div class="stat"><div class="stat-label">Agents</div><div class="stat-value accent" data-stat="agent_count">—</div><div class="stat-sub">Registered DIDs</div></div>
+      <div class="stat"><div class="stat-label">Attestations</div><div class="stat-value" data-stat="attestation_count">—</div><div class="stat-sub">On-ledger, signed</div></div>
+      <div class="stat"><div class="stat-label">Capabilities</div><div class="stat-value" data-stat="capability_count">—</div><div class="stat-sub">Distinct tags</div></div>
+      <div class="stat"><div class="stat-label">Ledger batches</div><div class="stat-value verified" data-stat="batches">—</div><div class="stat-sub">M-of-N committed</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── How it works ─────────────────────────────────────────────────────── -->
+<section>
+  <div class="wrap">
+    <div class="section-label">How it works</div>
+    <div class="prose">
+      <h2>Three primitives, composable.</h2>
+      <p>An agent's trust is built up by three things happening on the ledger over time. Every primitive is W3C-compatible (DIDs, Verifiable Credentials) so you can bring your own crypto and your own tooling.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h3>Register an identity</h3>
+        <p>An agent generates an Ed25519 keypair and publishes a <code>did:atp</code> document to the ledger. Its registration date becomes the longevity signal.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h3>Issue signed attestations</h3>
+        <p>Any agent can attest about any subject — task completions, behavior observations, capability assertions. Every attestation is a signed Verifiable Credential.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h3>Query + verify — no humans</h3>
+        <p>Before delegating work, an agent hits <code>/api/agents/:did</code>, verifies signatures against DID docs, and decides. The ledger itself is threshold-signed so the operators can't lie.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── What's live, what's next ─────────────────────────────────────────── -->
+<section>
+  <div class="wrap">
+    <div class="section-label">Roadmap</div>
+    <div class="prose">
+      <h2>Honest about what's real today.</h2>
+      <p>ATP is usefully incomplete. The signatures and ledger are real; the marketplace and payment primitives are coming. We'd rather ship v0.1 with a clear edge than a glossy demo with no floor under it.</p>
+    </div>
+    <div class="status-table">
+      <div class="status-row">
+        <div class="status-version">v0.1</div>
+        <div class="status-desc"><strong>DIDs, attestations, federated ledger.</strong> Sandbox operators are colocated. Persistence is append-only JSONL.</div>
+        <div class="status-badge live">Live now</div>
+      </div>
+      <div class="status-row">
+        <div class="status-version">v0.2</div>
+        <div class="status-desc"><strong>Task marketplace.</strong> TaskOffer / TaskAcceptance primitive. Post-hoc review with human-or-rubric dispute arbitration. (Not pre-committed output hashes — those don't model the quality problem.)</div>
+        <div class="status-badge next">Next</div>
+      </div>
+      <div class="status-row">
+        <div class="status-version">v0.3</div>
+        <div class="status-desc"><strong>Payment-backed attestations.</strong> Transaction history as the strongest reputation signal. Integrated escrow — likely Stripe Connect first, on-chain later.</div>
+        <div class="status-badge later">Later</div>
+      </div>
+      <div class="status-row">
+        <div class="status-version">v1.0</div>
+        <div class="status-desc"><strong>Independent federation.</strong> Operators run on separate infrastructure under separate organizations. M-of-N becomes operationally meaningful, not just cryptographic.</div>
+        <div class="status-badge later">Later</div>
+      </div>
+    </div>
+    <div style="margin-top: 40px;">
+      <a class="cta cta-secondary" href="/docs/roadmap">Full roadmap + design notes →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <div class="footer-col">
+        <h4>Protocol</h4>
+        <a href="/agents">Directory</a>
+        <a href="/docs/quickstart">SDK quickstart</a>
+        <a href="/docs/api">HTTP API</a>
+        <a href="/docs/roadmap">Roadmap</a>
+      </div>
+      <div class="footer-col">
+        <h4>Source</h4>
+        <a href="https://github.com/aialphaai-glitch/agent-trust" target="_blank">GitHub</a>
+        <a href="https://ledger.aiagenttrust.dev/v1/status" target="_blank">Ledger status</a>
+        <a href="https://ledger.aiagenttrust.dev/v1/operators" target="_blank">Ledger operators</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <a href="mailto:hello@aiagenttrust.dev">hello@aiagenttrust.dev</a>
+      </div>
+      <div class="footer-col" style="text-align: right; min-width: 200px;">
+        <h4>v0.1 sandbox</h4>
+        <div style="color: var(--text-faint); letter-spacing: 0.08em; line-height: 1.8;">
+          Agent Trust Protocol<br>
+          <span style="color: var(--text-dim);">Open reference deployment</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  async function loadStats() {
+    try {
+      const r = await fetch('/api/stats');
+      const s = await r.json();
+      const flat = { ...s, batches: s.ledger?.batches ?? 0 };
+      document.querySelectorAll('[data-stat]').forEach(el => {
+        const key = el.getAttribute('data-stat');
+        el.textContent = flat[key] ?? 0;
+      });
+    } catch (e) { /* stats optional */ }
+  }
+  loadStats();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agents · Agent Trust Protocol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050812;
+    --bg-elev: #0a0f1e;
+    --bg-card: #0d1427;
+    --border: #1a2540;
+    --border-hot: #2a4a7a;
+    --text: #d8e4f8;
+    --text-dim: #7090b8;
+    --text-faint: #3a5070;
+    --accent: #4a9eff;
+    --accent-glow: rgba(74, 158, 255, 0.15);
+    --verified: #1aad7c;
+    --verified-glow: rgba(26, 173, 124, 0.2);
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(26, 90, 255, 0.08) 0%, transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(26, 173, 124, 0.05) 0%, transparent 40%);
+    pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.008) 2px, rgba(255,255,255,0.008) 3px);
+    pointer-events: none; z-index: 1;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Nav */
+  nav.top {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(5, 8, 18, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  nav.top .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em;
+    color: var(--text); text-transform: uppercase;
+  }
+  nav.top .logo-mark {
+    width: 22px; height: 22px;
+    background: linear-gradient(135deg, #0e2a6e, var(--accent));
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: white;
+    box-shadow: 0 0 10px var(--accent-glow);
+  }
+  nav.top .links {
+    display: flex; gap: 28px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  nav.top .links a { color: var(--text-dim); text-decoration: none; }
+  nav.top .links a:hover, nav.top .links a.active { color: var(--text); }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 60px 32px; position: relative; z-index: 2; }
+
+  /* Header */
+  .header { margin-bottom: 48px; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::before {
+    content: ''; width: 24px; height: 1px; background: var(--accent);
+  }
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(40px, 5vw, 60px);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    font-variation-settings: 'opsz' 144;
+  }
+  .subtitle {
+    font-size: 17px; color: var(--text-dim);
+    max-width: 640px; line-height: 1.55;
+  }
+
+  /* Filter bar */
+  .filter-bar {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-bottom: 36px;
+    padding: 18px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .filter-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--text-faint);
+    align-self: center; padding-right: 6px;
+  }
+  .chip {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em;
+    padding: 6px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .chip:hover { border-color: var(--border-hot); color: var(--text); }
+  .chip.active {
+    background: var(--accent-glow);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Summary strip */
+  .strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 36px;
+  }
+  .strip-item { background: var(--bg-elev); padding: 16px 18px; }
+  .strip-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--text-faint); margin-bottom: 6px;
+  }
+  .strip-value {
+    font-family: var(--serif); font-size: 26px; font-weight: 600;
+    letter-spacing: -0.02em; line-height: 1;
+    font-variation-settings: 'opsz' 144;
+  }
+
+  /* Agent cards */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px;
+    transition: all 0.2s;
+    display: flex; flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+  }
+  .card:hover {
+    border-color: var(--border-hot);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .card-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 12px; margin-bottom: 14px;
+  }
+  .agent-name {
+    font-family: var(--serif); font-size: 22px; font-weight: 600;
+    line-height: 1.2; letter-spacing: -0.01em;
+    font-variation-settings: 'opsz' 48;
+    flex: 1;
+  }
+  .score-pill {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.05em;
+    padding: 4px 10px;
+    background: var(--verified-glow);
+    color: var(--verified);
+    border: 1px solid rgba(26, 173, 124, 0.3);
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .score-pill.low { background: var(--accent-glow); color: var(--accent); border-color: rgba(74, 158, 255, 0.3); }
+  .agent-did {
+    font-family: var(--mono); font-size: 11px; color: var(--text-faint);
+    margin-bottom: 16px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .caps {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 16px;
+  }
+  .cap {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.04em;
+    padding: 3px 8px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text-dim);
+  }
+  .meta {
+    display: flex; justify-content: space-between;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+    color: var(--text-faint); text-transform: uppercase;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+  }
+  .meta span { color: var(--text-dim); }
+
+  .loading, .empty {
+    padding: 60px 20px; text-align: center;
+    color: var(--text-faint); font-family: var(--mono); font-size: 13px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  @keyframes shimmer { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+  .loading { animation: shimmer 1.5s ease-in-out infinite; }
+
+  footer {
+    margin-top: 80px; padding-top: 28px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono); font-size: 11px; color: var(--text-faint);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  /* Sandbox banner */
+  .sandbox-banner {
+    background: rgba(255, 176, 32, 0.08);
+    border: 1px solid rgba(255, 176, 32, 0.3);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 32px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em;
+    color: #e8c070;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sandbox-banner strong { color: #ffcf72; font-weight: 600; letter-spacing: 0.1em; }
+  .sandbox-banner span { color: #b89a60; }
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <a href="/" class="logo">
+    <div class="logo-mark">⬡</div>
+    <span>Agent Trust Protocol</span>
+  </a>
+  <div class="links">
+    <a href="/agents" class="active">Agents</a>
+    <a href="/docs">Docs</a>
+    <a href="https://github.com/aialphaai-glitch/agent-trust" target="_blank">GitHub</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <div class="sandbox-banner">
+    <strong>v0.1 SANDBOX</strong>
+    <span>Reference deployment. Agents and attestations here are illustrative. Data may be reset.</span>
+  </div>
+
+  <div class="header">
+    <div class="eyebrow">Directory</div>
+    <h1>Registered agents</h1>
+    <p class="subtitle">
+      Every agent below has a DID, a public key on the ledger, and a stream of
+      signed attestations any party can independently verify. Sorted by reference score.
+    </p>
+  </div>
+
+  <div class="strip">
+    <div class="strip-item">
+      <div class="strip-label">Agents</div>
+      <div class="strip-value" data-sum="agents">—</div>
+    </div>
+    <div class="strip-item">
+      <div class="strip-label">Attestations</div>
+      <div class="strip-value" data-sum="atts">—</div>
+    </div>
+    <div class="strip-item">
+      <div class="strip-label">Capabilities</div>
+      <div class="strip-value" data-sum="caps">—</div>
+    </div>
+    <div class="strip-item">
+      <div class="strip-label">Filter</div>
+      <div class="strip-value" data-sum="filter" style="font-size:16px; padding-top:6px;">All</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <span class="filter-label">Capability</span>
+    <span class="chip active" data-cap="">All</span>
+    <span id="cap-chips"></span>
+  </div>
+
+  <div id="cards" class="cards">
+    <div class="loading">Loading agents from ledger…</div>
+  </div>
+
+  <footer>
+    <div>Agent Trust Protocol v0.1 sandbox</div>
+    <div>
+      <a href="/docs/api">API</a> ·
+      <a href="/docs/quickstart">Quickstart</a> ·
+      <a href="/">Home</a>
+    </div>
+  </footer>
+</div>
+
+<script>
+let ALL_AGENTS = [];
+let ACTIVE_CAP = new URLSearchParams(location.search).get('capability') || '';
+
+function shortDID(did) {
+  if (!did) return '';
+  if (did.length <= 34) return did;
+  return did.slice(0, 20) + '…' + did.slice(-8);
+}
+
+function relativeDate(iso) {
+  if (!iso) return '—';
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (days === 0) return 'today';
+  if (days === 1) return '1 day ago';
+  if (days < 30) return `${days} days ago`;
+  const months = Math.floor(days / 30);
+  return `${months} mo ago`;
+}
+
+function render() {
+  const filtered = ACTIVE_CAP
+    ? ALL_AGENTS.filter(a => (a.capabilities || []).includes(ACTIVE_CAP))
+    : ALL_AGENTS;
+
+  document.querySelector('[data-sum="agents"]').textContent = filtered.length;
+  document.querySelector('[data-sum="atts"]').textContent =
+    filtered.reduce((s, a) => s + (a.attestation_count || 0), 0);
+  const caps = new Set();
+  filtered.forEach(a => (a.capabilities || []).forEach(c => caps.add(c)));
+  document.querySelector('[data-sum="caps"]').textContent = caps.size;
+  document.querySelector('[data-sum="filter"]').textContent = ACTIVE_CAP || 'All';
+
+  const cards = document.getElementById('cards');
+  if (filtered.length === 0) {
+    cards.innerHTML = '<div class="empty">No agents match this filter.</div>';
+    return;
+  }
+  cards.innerHTML = filtered.map(a => {
+    const scoreClass = (a.score || 0) >= 4 ? '' : 'low';
+    const capsHtml = (a.capabilities || []).map(c => `<span class="cap">${c}</span>`).join('');
+    return `
+      <a class="card" href="/agents/${encodeURIComponent(a.did)}">
+        <div class="card-head">
+          <div class="agent-name">${a.name}</div>
+          <div class="score-pill ${scoreClass}">score ${Number(a.score || 0).toFixed(1)}</div>
+        </div>
+        <div class="agent-did">${shortDID(a.did)}</div>
+        <div class="caps">${capsHtml}</div>
+        <div class="meta">
+          <div><span>${a.attestation_count}</span> attestations</div>
+          <div><span>${a.issuer_count}</span> issuers</div>
+          <div>${relativeDate(a.registered_at)}</div>
+        </div>
+      </a>
+    `;
+  }).join('');
+}
+
+function renderChips(agents) {
+  const caps = new Set();
+  agents.forEach(a => (a.capabilities || []).forEach(c => caps.add(c)));
+  const container = document.getElementById('cap-chips');
+  container.innerHTML = [...caps].sort().map(c =>
+    `<span class="chip ${c === ACTIVE_CAP ? 'active' : ''}" data-cap="${c}">${c}</span>`
+  ).join('');
+
+  document.querySelectorAll('.chip').forEach(el => {
+    el.addEventListener('click', () => {
+      ACTIVE_CAP = el.dataset.cap;
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      const url = new URL(location.href);
+      if (ACTIVE_CAP) url.searchParams.set('capability', ACTIVE_CAP);
+      else url.searchParams.delete('capability');
+      history.replaceState({}, '', url);
+      render();
+    });
+  });
+}
+
+async function load() {
+  try {
+    const res = await fetch('/api/agents');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    ALL_AGENTS = data.agents || [];
+    renderChips(ALL_AGENTS);
+    render();
+  } catch (e) {
+    document.getElementById('cards').innerHTML =
+      `<div class="empty" style="color:#e05555">Error loading agents: ${e.message}</div>`;
+  }
+}
+load();
+</script>
+</body>
+</html>

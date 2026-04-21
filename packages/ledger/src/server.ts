@@ -146,6 +146,13 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  // GET /v1/dids  — list all registered DID documents
+  if (req.method === "GET" && req.url === "/v1/dids") {
+    const docs = Array.from(didDocs.values());
+    res.writeHead(200).end(JSON.stringify({ count: docs.length, dids: docs }));
+    return;
+  }
+
   // GET /v1/subjects/:did
   if (req.method === "GET" && req.url?.startsWith("/v1/subjects/")) {
     const subject = decodeURIComponent(req.url.split("/v1/subjects/")[1]);

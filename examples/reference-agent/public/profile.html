@@ -276,6 +276,29 @@
   }
   .sandbox-banner strong { color: #ffcf72; font-weight: 600; letter-spacing: 0.1em; }
   .sandbox-banner span { color: #b89a60; }
+
+  /* Breadcrumb */
+  .crumb {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-faint);
+    margin-bottom: 20px; display: flex; gap: 10px; align-items: center;
+  }
+  .crumb a { color: var(--text-dim); text-decoration: none; }
+  .crumb a:hover { color: var(--accent); }
+
+  /* Capabilities */
+  .caps { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .cap {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.05em;
+    padding: 5px 10px; background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: 4px;
+    color: var(--text-dim);
+  }
+  .registered {
+    font-family: var(--mono); font-size: 11px; color: var(--text-faint);
+    margin-top: 14px; letter-spacing: 0.04em;
+  }
+  .registered span { color: var(--text-dim); }
 </style>
 </head>
 <body>
@@ -283,6 +306,14 @@
   <div class="brand">
     <div class="brand-mark">⬡</div>
     <span>Agent Trust Protocol — Verified Profile</span>
+  </div>
+
+  <div class="crumb">
+    <a href="/">Home</a>
+    <span>›</span>
+    <a href="/agents">Agents</a>
+    <span>›</span>
+    <span id="crumb-name">__NAME__</span>
   </div>
 
   <div class="sandbox-banner">
@@ -297,6 +328,8 @@
       <span id="agent-did">__DID__</span>
       <span class="copy-icon">COPY</span>
     </div>
+    <div class="caps" id="caps"></div>
+    <div class="registered" id="registered"></div>
   </div>
 
   <div class="seal">
@@ -369,14 +402,28 @@ function shortDID(did) {
 
 async function load() {
   try {
-    const res = await fetch('/api/profile');
+    const did = document.getElementById('agent-did').textContent.trim();
+    const res = await fetch(`/api/agents/${encodeURIComponent(did)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     const atts = data.attestations || [];
 
     document.getElementById('stat-total').textContent = atts.length;
     document.getElementById('stat-verified').textContent = data.verified_count;
-    document.getElementById('stat-score').textContent = data.score.toFixed(1);
-    document.getElementById('stat-issuers').textContent = new Set(atts.map(a => a.issuer)).size;
+    document.getElementById('stat-score').textContent = Number(data.score || 0).toFixed(1);
+    document.getElementById('stat-issuers').textContent = data.issuer_count ?? new Set(atts.map(a => a.issuer)).size;
+
+    const caps = data.agent?.capabilities || [];
+    const capEl = document.getElementById('caps');
+    capEl.innerHTML = caps.map(c => `<span class="cap">${c}</span>`).join('');
+
+    const reg = data.agent?.registered_at;
+    if (reg) {
+      const d = new Date(reg);
+      const days = Math.floor((Date.now() - d.getTime()) / 86400000);
+      document.getElementById('registered').innerHTML =
+        `<span>Registered</span> ${d.toLocaleDateString()} · ${days} day${days === 1 ? '' : 's'} ago`;
+    }
 
     const container = document.getElementById('attestations');
     document.getElementById('att-count').textContent = atts.length ? `${atts.length} total` : '';

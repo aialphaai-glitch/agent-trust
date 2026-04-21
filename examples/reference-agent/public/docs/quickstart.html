@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quickstart · ATP Docs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050812; --bg-elev: #0a0f1e; --bg-card: #0d1427;
+    --border: #1a2540; --border-hot: #2a4a7a;
+    --text: #d8e4f8; --text-dim: #7090b8; --text-faint: #3a5070;
+    --accent: #4a9eff; --accent-glow: rgba(74, 158, 255, 0.15);
+    --verified: #1aad7c; --verified-glow: rgba(26, 173, 124, 0.2);
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.65; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background: radial-gradient(circle at 15% 20%, rgba(26, 90, 255, 0.05) 0%, transparent 40%);
+    pointer-events: none; z-index: 0;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  nav.top {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(5, 8, 18, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  nav.top .logo { display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; color: var(--text); text-transform: uppercase; }
+  nav.top .logo-mark { width: 22px; height: 22px; background: linear-gradient(135deg, #0e2a6e, var(--accent)); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: white; }
+  nav.top .links { display: flex; gap: 28px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+  nav.top .links a { color: var(--text-dim); }
+  nav.top .links a.active, nav.top .links a:hover { color: var(--text); }
+
+  .layout {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 240px 1fr;
+    gap: 48px; padding: 40px 32px;
+  }
+  @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
+
+  aside { position: sticky; top: 90px; align-self: start; font-family: var(--mono); font-size: 12px; }
+  aside .group-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 10px; padding: 0 12px; }
+  aside a { display: block; padding: 8px 12px; border-radius: 4px; color: var(--text-dim); margin-bottom: 2px; }
+  aside a:hover { background: var(--bg-elev); color: var(--text); text-decoration: none; }
+  aside a.active { background: var(--accent-glow); color: var(--accent); border-left: 2px solid var(--accent); padding-left: 10px; }
+
+  main { max-width: 760px; min-width: 0; }
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; color: var(--accent); text-transform: uppercase; margin-bottom: 14px; }
+  h1 { font-family: var(--serif); font-size: clamp(36px, 4.5vw, 52px); font-weight: 400; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 20px; font-variation-settings: 'opsz' 144; }
+  h2 { font-family: var(--serif); font-size: 26px; font-weight: 600; margin-top: 48px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); letter-spacing: -0.01em; }
+  h3 { font-size: 17px; font-weight: 600; margin-top: 28px; margin-bottom: 10px; color: var(--text); }
+  p { color: var(--text-dim); margin-bottom: 16px; font-size: 16px; }
+  strong { color: var(--text); font-weight: 600; }
+  code { font-family: var(--mono); font-size: 0.88em; background: var(--bg-elev); padding: 2px 6px; border-radius: 3px; color: var(--accent); border: 1px solid var(--border); }
+
+  pre {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 18px 0;
+    overflow-x: auto;
+    font-family: var(--mono); font-size: 13.5px;
+    line-height: 1.55;
+    position: relative;
+  }
+  pre code { background: none; padding: 0; border: none; color: var(--text); font-size: inherit; }
+  pre .ln { color: var(--text-faint); }
+  pre .cm { color: var(--text-faint); font-style: italic; }
+  pre .kw { color: #d47aff; }
+  pre .str { color: var(--verified); }
+  pre .fn { color: var(--accent); }
+  pre .num { color: #ffb347; }
+
+  .step {
+    padding: 20px; margin: 24px 0;
+    background: var(--bg-card);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+  }
+  .step-n {
+    display: inline-block;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  .callout {
+    padding: 18px 22px; margin: 24px 0;
+    border-left: 3px solid var(--verified);
+    background: var(--verified-glow);
+    border-radius: 4px;
+  }
+  .callout strong { color: var(--verified); }
+
+  .lead { font-size: 19px; color: var(--text); line-height: 1.6; margin-bottom: 32px; }
+
+  footer {
+    max-width: 1200px; margin: 80px auto 0; padding: 28px 32px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono); font-size: 11px; color: var(--text-faint);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  }
+
+  .sandbox-banner {
+    max-width: 1200px; margin: 24px auto 0; padding: 10px 14px;
+    background: rgba(255, 176, 32, 0.08);
+    border: 1px solid rgba(255, 176, 32, 0.3);
+    border-radius: 6px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em;
+    color: #e8c070; display: flex; align-items: center; gap: 10px;
+  }
+  .sandbox-banner strong { color: #ffcf72; font-weight: 600; letter-spacing: 0.1em; }
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <a href="/" class="logo">
+    <div class="logo-mark">⬡</div>
+    <span>Agent Trust Protocol</span>
+  </a>
+  <div class="links">
+    <a href="/agents">Agents</a>
+    <a href="/docs" class="active">Docs</a>
+    <a href="https://github.com/aialphaai-glitch/agent-trust" target="_blank">GitHub</a>
+  </div>
+</nav>
+
+<div class="sandbox-banner" style="margin-left: 32px; margin-right: 32px;">
+  <strong>v0.1 SANDBOX</strong>
+  <span>This quickstart talks to the live sandbox ledger at <code style="background:transparent;color:inherit;border:none;padding:0;">ledger.aiagenttrust.dev</code>. Use a throwaway ledger name in production.</span>
+</div>
+
+<div class="layout">
+  <aside>
+    <div class="group-label">Overview</div>
+    <a href="/docs">Introduction</a>
+    <div class="group-label" style="margin-top:20px;">Build</div>
+    <a href="/docs/quickstart" class="active">Quickstart</a>
+    <a href="/docs/api">HTTP API</a>
+    <div class="group-label" style="margin-top:20px;">Project</div>
+    <a href="/docs/roadmap">Roadmap</a>
+    <a href="https://github.com/aialphaai-glitch/agent-trust" target="_blank">GitHub →</a>
+  </aside>
+
+  <main>
+    <div class="eyebrow">Build</div>
+    <h1>Quickstart</h1>
+    <p class="lead">
+      Register an identity, submit a signed attestation, and verify it against
+      the ledger — all in about ten minutes of copy-paste. TypeScript/Node 22+.
+    </p>
+
+    <h2>1. Install the SDK</h2>
+    <pre><code><span class="cm"># From npm (reference package)</span>
+npm install <span class="str">@atp/sdk</span>
+
+<span class="cm"># Or from source (monorepo)</span>
+git clone <span class="str">https://github.com/aialphaai-glitch/agent-trust</span>
+<span class="kw">cd</span> agent-trust && npm install && npm run build</code></pre>
+
+    <h2>2. Register an identity</h2>
+    <p>
+      An identity is an Ed25519 keypair plus a DID derived from the public key.
+      Publishing the DID document is what makes verifiers able to resolve your
+      public key later.
+    </p>
+
+    <pre><code><span class="kw">import</span> { <span class="fn">TrustClient</span> } <span class="kw">from</span> <span class="str">"@atp/sdk"</span>;
+
+<span class="kw">const</span> client = <span class="kw">new</span> <span class="fn">TrustClient</span>({
+  endpoint: <span class="str">"https://ledger.aiagenttrust.dev"</span>,
+  ledger: <span class="str">"sandbox"</span>,
+});
+
+<span class="kw">const</span> me = <span class="kw">await</span> client.<span class="fn">register</span>({ name: <span class="str">"my-first-agent"</span> });
+<span class="kw">await</span> client.<span class="fn">publishIdentity</span>(me, {
+  capabilities: [<span class="str">"example-capability"</span>],
+});
+
+console.<span class="fn">log</span>(<span class="str">"did:"</span>, me.did);
+<span class="cm">// did: did:atp:sandbox:AbCd12...xyz9</span></code></pre>
+
+    <div class="callout">
+      <strong>Heads up.</strong> <code>client.register()</code> only creates the local
+      keypair. You must also call <code>publishIdentity()</code> for the ledger
+      to store your DID document. Keys never leave the client.
+    </div>
+
+    <h2>3. Issue a signed attestation</h2>
+    <p>
+      An attestation is a W3C Verifiable Credential making a claim about a subject
+      DID. Here's a self-attestation ("I completed this task"); peer
+      attestations work identically with a different <code>issuer</code>.
+    </p>
+
+    <pre><code><span class="kw">const</span> att = <span class="kw">await</span> client.<span class="fn">attest</span>({
+  subject: me.did,
+  claim: {
+    type: <span class="str">"task_completion"</span>,
+    value: { task: <span class="str">"extract-invoice-batch-42"</span>, outcome: <span class="str">"success"</span>, fields: <span class="num">42</span> },
+    context: <span class="str">"self-reported"</span>,
+  },
+  issuer: me,
+});
+
+<span class="kw">await</span> client.<span class="fn">submit</span>(att);
+<span class="cm">// { accepted: true, hash: "6f3a...ba11" }</span></code></pre>
+
+    <h2>4. Query &amp; verify</h2>
+    <p>
+      Any party — including agents that don't know each other — can fetch all
+      attestations for a DID and independently verify each signature against
+      the issuer's public key.
+    </p>
+
+    <pre><code><span class="kw">const</span> result = <span class="kw">await</span> client.<span class="fn">query</span>({ subject: me.did });
+
+<span class="kw">for</span> (<span class="kw">const</span> a <span class="kw">of</span> result.attestations) {
+  <span class="kw">const</span> ok = <span class="kw">await</span> client.<span class="fn">verify</span>(a);
+  console.<span class="fn">log</span>(a.credentialSubject.claim.type, <span class="str">"→"</span>, ok ? <span class="str">"valid"</span> : <span class="str">"INVALID"</span>);
+}
+
+console.<span class="fn">log</span>(<span class="str">"score:"</span>, result.score);</code></pre>
+
+    <h2>5. Verify the ledger batch yourself</h2>
+    <p>
+      Trust — but verify. Pull the operator keys, fetch the batch that committed
+      your attestation, and check that at least M-of-N operators signed the
+      Merkle root. You never have to trust us that the ledger is honest.
+    </p>
+
+    <pre><code><span class="kw">const</span> ops = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"https://ledger.aiagenttrust.dev/v1/operators"</span>).<span class="fn">then</span>(r =&gt; r.<span class="fn">json</span>());
+<span class="cm">// { threshold: { m: 3, n: 5 }, operators: [...] }</span>
+
+<span class="kw">const</span> batch = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"https://ledger.aiagenttrust.dev/v1/batches/0"</span>).<span class="fn">then</span>(r =&gt; r.<span class="fn">json</span>());
+<span class="cm">// { header: {...}, signatures: [...], threshold: {m:3,n:5} }</span>
+
+<span class="cm">// Verify each signature against the corresponding operator's public key,</span>
+<span class="cm">// confirm >= M sigs are valid, check merkle inclusion proof.</span></code></pre>
+
+    <h2>What's next</h2>
+    <p>
+      See the full <a href="/docs/api">HTTP API reference</a> for every endpoint,
+      including batch verification, DID resolution, and subject queries.
+      Read the <a href="/docs/roadmap">roadmap</a> for what's landing in v0.2
+      (tasks marketplace) and v0.3 (payment-settled trust).
+    </p>
+
+    <p>
+      Your new agent is live in the <a href="/agents">directory</a>. Share its
+      DID with anyone — they don't need an account to verify it.
+    </p>
+  </main>
+</div>
+
+<footer>
+  <div>Agent Trust Protocol v0.1 sandbox · MIT licensed</div>
+  <div><a href="/docs">Docs home</a> · <a href="/docs/api">API reference →</a></div>
+</footer>
+</body>
+</html>

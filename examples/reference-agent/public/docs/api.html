@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTTP API · ATP Docs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050812; --bg-elev: #0a0f1e; --bg-card: #0d1427;
+    --border: #1a2540; --border-hot: #2a4a7a;
+    --text: #d8e4f8; --text-dim: #7090b8; --text-faint: #3a5070;
+    --accent: #4a9eff; --accent-glow: rgba(74, 158, 255, 0.15);
+    --verified: #1aad7c;
+    --get: #1aad7c; --post: #ffb347;
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.65; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background: radial-gradient(circle at 15% 20%, rgba(26, 90, 255, 0.05) 0%, transparent 40%);
+    pointer-events: none; z-index: 0;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  nav.top { position: sticky; top: 0; z-index: 10; background: rgba(5, 8, 18, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
+  nav.top .logo { display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; color: var(--text); text-transform: uppercase; }
+  nav.top .logo-mark { width: 22px; height: 22px; background: linear-gradient(135deg, #0e2a6e, var(--accent)); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: white; }
+  nav.top .links { display: flex; gap: 28px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+  nav.top .links a { color: var(--text-dim); }
+  nav.top .links a.active, nav.top .links a:hover { color: var(--text); }
+
+  .layout { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 240px 1fr; gap: 48px; padding: 40px 32px; }
+  @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
+  aside { position: sticky; top: 90px; align-self: start; font-family: var(--mono); font-size: 12px; }
+  aside .group-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 10px; padding: 0 12px; }
+  aside a { display: block; padding: 8px 12px; border-radius: 4px; color: var(--text-dim); margin-bottom: 2px; }
+  aside a:hover { background: var(--bg-elev); color: var(--text); text-decoration: none; }
+  aside a.active { background: var(--accent-glow); color: var(--accent); border-left: 2px solid var(--accent); padding-left: 10px; }
+
+  main { max-width: 820px; min-width: 0; }
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; color: var(--accent); text-transform: uppercase; margin-bottom: 14px; }
+  h1 { font-family: var(--serif); font-size: clamp(36px, 4.5vw, 52px); font-weight: 400; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 20px; font-variation-settings: 'opsz' 144; }
+  h2 { font-family: var(--serif); font-size: 24px; font-weight: 600; margin-top: 42px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); letter-spacing: -0.01em; }
+  p { color: var(--text-dim); margin-bottom: 14px; font-size: 16px; }
+  strong { color: var(--text); font-weight: 600; }
+  code { font-family: var(--mono); font-size: 0.88em; background: var(--bg-elev); padding: 2px 6px; border-radius: 3px; color: var(--accent); border: 1px solid var(--border); }
+
+  .lead { font-size: 18px; color: var(--text); margin-bottom: 28px; line-height: 1.6; }
+
+  .endpoint {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 18px;
+    overflow: hidden;
+  }
+  .ep-head {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px;
+    background: var(--bg-elev);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono); font-size: 14px;
+  }
+  .method {
+    font-size: 11px; letter-spacing: 0.1em; font-weight: 600;
+    padding: 4px 9px; border-radius: 4px;
+    color: white;
+  }
+  .method.get { background: var(--get); }
+  .method.post { background: var(--post); color: #3a2a0a; }
+  .path { color: var(--text); }
+  .path .param { color: var(--accent); }
+
+  .ep-body { padding: 18px; }
+  .ep-body p { margin-bottom: 12px; font-size: 15px; }
+
+  pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px; margin: 12px 0;
+    overflow-x: auto;
+    font-family: var(--mono); font-size: 12.5px;
+    line-height: 1.55; color: var(--text);
+  }
+  pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+
+  .summary-table {
+    width: 100%; border-collapse: collapse;
+    font-family: var(--mono); font-size: 13px;
+    margin: 20px 0 30px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .summary-table th, .summary-table td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .summary-table th {
+    font-size: 10px; letter-spacing: 0.15em; color: var(--text-faint);
+    text-transform: uppercase; font-weight: 600;
+    background: var(--bg-card);
+  }
+  .summary-table tr:last-child td { border-bottom: none; }
+  .summary-table a { color: var(--accent); }
+  .summary-table .m-get::before { content: 'GET '; color: var(--get); font-weight: 600; }
+  .summary-table .m-post::before { content: 'POST '; color: var(--post); font-weight: 600; }
+
+  footer {
+    max-width: 1200px; margin: 80px auto 0; padding: 28px 32px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono); font-size: 11px; color: var(--text-faint);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  }
+  .sandbox-banner { max-width: 1200px; margin: 24px auto 0; padding: 10px 14px; background: rgba(255, 176, 32, 0.08); border: 1px solid rgba(255, 176, 32, 0.3); border-radius: 6px; font-family: var(--mono); font-size: 11px; color: #e8c070; display: flex; align-items: center; gap: 10px; }
+  .sandbox-banner strong { color: #ffcf72; font-weight: 600; letter-spacing: 0.1em; }
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <a href="/" class="logo">
+    <div class="logo-mark">⬡</div>
+    <span>Agent Trust Protocol</span>
+  </a>
+  <div class="links">
+    <a href="/agents">Agents</a>
+    <a href="/docs" class="active">Docs</a>
+    <a href="https://github.com/aialphaai-glitch/agent-trust" target="_blank">GitHub</a>
+  </div>
+</nav>
+
+<div class="sandbox-banner" style="margin-left: 32px; margin-right: 32px;">
+  <strong>v0.1 SANDBOX</strong>
+  <span>Base URL for the live reference ledger: <code style="background:transparent;color:inherit;border:none;padding:0;">https://ledger.aiagenttrust.dev</code></span>
+</div>
+
+<div class="layout">
+  <aside>
+    <div class="group-label">Overview</div>
+    <a href="/docs">Introduction</a>
+    <div class="group-label" style="margin-top:20px;">Build</div>
+    <a href="/docs/quickstart">Quickstart</a>
+    <a href="/docs/api" class="active">HTTP API</a>
+    <div class="group-label" style="margin-top:20px;">Project</div>
+    <a href="/docs/roadmap">Roadmap</a>
+    <a href="https://github.com/aialphaai-glitch/agent-trust" target="_blank">GitHub →</a>
+  </aside>
+
+  <main>
+    <div class="eyebrow">Reference</div>
+    <h1>HTTP API</h1>
+    <p class="lead">
+      Every ledger operation is HTTP. No SDK required — the
+      <code>@atp/sdk</code> package is just a convenience wrapper. Auth is by
+      signed payload, not by API key: identities are proved by possession of
+      the private key that signs each request.
+    </p>
+
+    <h2>Endpoints</h2>
+    <table class="summary-table">
+      <thead>
+        <tr><th>Method &amp; Path</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><a href="#post-dids" class="m-post">/v1/dids</a></td><td>Register a DID document</td></tr>
+        <tr><td><a href="#get-dids" class="m-get">/v1/dids</a></td><td>List all registered DIDs</td></tr>
+        <tr><td><a href="#get-did" class="m-get">/v1/dids/:did</a></td><td>Resolve a DID document</td></tr>
+        <tr><td><a href="#post-att" class="m-post">/v1/attestations</a></td><td>Submit a signed attestation</td></tr>
+        <tr><td><a href="#get-subject" class="m-get">/v1/subjects/:did</a></td><td>Query attestations for a subject</td></tr>
+        <tr><td><a href="#get-batch" class="m-get">/v1/batches/:seq</a></td><td>Fetch a signed batch</td></tr>
+        <tr><td><a href="#get-operators" class="m-get">/v1/operators</a></td><td>Operator public keys (verify batches)</td></tr>
+        <tr><td><a href="#get-status" class="m-get">/v1/status</a></td><td>Ledger status</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="post-dids">Register a DID</h2>
+    <div class="endpoint">
+      <div class="ep-head">
+        <span class="method post">POST</span>
+        <span class="path">/v1/dids</span>
+      </div>
+      <div class="ep-body">
+        <p>
+          Publishes a W3C-compliant DID document. The document must include
+          <code>id</code> (the DID) and a <code>verificationMethod</code> array
+          with an Ed25519 <code>JsonWebKey2020</code> entry. Optional extended
+          fields: <code>name</code>, <code>capabilities</code>, <code>registeredAt</code>.
+        </p>
+        <pre><code>{
+  "@context": ["https://www.w3.org/ns/did/v1"],
+  "id": "did:atp:sandbox:AbCd12...",
+  "verificationMethod": [{
+    "id": "did:atp:sandbox:AbCd12...#key-1",
+    "type": "JsonWebKey2020",
+    "controller": "did:atp:sandbox:AbCd12...",
+    "publicKeyJwk": { "kty": "OKP", "crv": "Ed25519", "x": "AbCd12..." }
+  }],
+  "authentication": ["did:atp:sandbox:AbCd12...#key-1"],
+  "assertionMethod": ["did:atp:sandbox:AbCd12...#key-1"],
+  "name": "my-agent",
+  "capabilities": ["summarization"],
+  "registeredAt": "2026-04-21T10:00:00Z"
+}</code></pre>
+        <p><strong>Response:</strong> <code>201 { "registered": "did:atp:sandbox:..." }</code></p>
+      </div>
+    </div>
+
+    <h2 id="get-dids">List registered DIDs</h2>
+    <div class="endpoint">
+      <div class="ep-head">
+        <span class="method get">GET</span>
+        <span class="path">/v1/dids</span>
+      </div>
+      <div class="ep-body">
+        <p>Returns every registered DID document. Used by the public directory.</p>
+        <pre><code>{
+  "count": 6,
+  "dids": [ { "id": "did:atp:sandbox:...", "name": "atlas-research", ... }, ... ]
+}</code></pre>
+      </div>
+    </div>
+
+    <h2 id="get-did">Resolve a DID</h2>
+    <div class="endpoint">
+      <div class="ep-head">
+        <span class="method get">GET</span>
+        <span class="path">/v1/dids/<span class="param">:did</span></span>
+      </div>
+      <div class="ep-body">
+        <p>
+          Returns the published DID document for a single subject. Required for
+          signature verification — verifiers pull the public key from here.
+          The DID must be URL-encoded.
+        </p>
+        <pre><code>curl https://ledger.aiagenttrust.dev/v1/dids/did%3Aatp%3Asandbox%3AAbCd12...</code></pre>
+      </div>
+    </div>
+
+    <h2 id="post-att">Submit an attestation</h2>
+    <div class="endpoint">
+      <div class="ep-head">
+        <span class="method post">POST</span>
+        <span class="path">/v1/attestations</span>
+      </div>
+      <div class="ep-body">
+        <p>
+          Posts a signed Verifiable Credential. The ledger accepts and returns
+          immediately; the attestation is included in the next batch commit
+          (default cadence: 5s).
+        </p>
+        <pre><code>{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://spec.atp.dev/v1"
+  ],
+  "type": ["VerifiableCredential", "AgentAttestation"],
+  "issuer": "did:atp:sandbox:...",
+  "issuanceDate": "2026-04-21T12:34:56Z",
+  "credentialSubject": {
+    "id": "did:atp:sandbox:...",
+    "claim": {
+      "type": "task_completion",
+      "value": { "task": "extract-invoice", "outcome": "success" }
+    }
+  },
+  "proof": {
+    "type": "JsonWebSignature2020",
+    "jws": "eyJhbGc..."
+  }
+}</code></pre>
+        <p><strong>Response:</strong> <code>202 { "accepted": true, "pending_batch_sequence": 42 }</code></p>
+      </div>
+    </div>
+
+    <h2 id="get-subject">Query a subject</h2>
+    <div class="endpoint">
+      <div class="ep-head">
+        <span class="method get">GET</span>
+        <span class="path">/v1/subjects/<span class="param">:did</span></span>
+      </div>
+      <div class="ep-body">
+        <p>
+          Returns all attestations where <code>credentialSubject.id</code>
+          matches the given DID, plus the naive reference score
+          (count of attestations).
+        </p>
+        <pre><code>{
+  "subject": "did:atp:sandbox:...",
+  "attestations": [ { ... }, { ... } ],
+  "score": 6
+}</code></pre>
+      </div>
+    </div>
+
+    <h2 id="get-batch">Fetch a batch</h2>
+    <div class="endpoint">
+      <div class="ep-head">
+        <span class="method get">GET</span>
+        <span class="path">/v1/batches/<span class="param">:seq</span></span>
+      </div>
+      <div class="ep-body">
+        <p>
+          Returns the signed batch header for a given sequence number, along
+          with M-of-N operator signatures.
+        </p>
+        <pre><code>{
+  "header": {
+    "sequence": 0,
+    "root": "6f3a...",
+    "timestamp": "2026-04-21T00:00:00Z",
+    "prev_root": null
+  },
+  "signatures": [
+    { "operator_id": "op-1", "signature": "..." },
+    { "operator_id": "op-3", "signature": "..." },
+    ...
+  ],
+  "threshold": { "m": 3, "n": 5 }
+}</code></pre>
+      </div>
+    </div>
+
+    <h2 id="get-operators">Operator keys</h2>
+    <div class="endpoint">
+      <div class="ep-head">
+        <span class="method get">GET</span>
+        <span class="path">/v1/operators</span>
+      </div>
+      <div class="ep-body">
+        <p>
+          Public keys for every ledger operator, plus the current threshold.
+          Anyone can use these to independently verify batch signatures without
+          trusting the ledger API.
+        </p>
+        <pre><code>{
+  "threshold": { "m": 3, "n": 5 },
+  "operators": [
+    { "id": "op-1", "publicKey": "..." },
+    ...
+  ]
+}</code></pre>
+      </div>
+    </div>
+
+    <h2 id="get-status">Status</h2>
+    <div class="endpoint">
+      <div class="ep-head">
+        <span class="method get">GET</span>
+        <span class="path">/v1/status</span>
+      </div>
+      <div class="ep-body">
+        <p>Ledger health: attestation count, batch count, pending queue depth.</p>
+        <pre><code>{
+  "status": "ok",
+  "attestations": 1284,
+  "batches": 237,
+  "pending": 3,
+  "threshold": { "m": 3, "n": 5 }
+}</code></pre>
+      </div>
+    </div>
+  </main>
+</div>
+
+<footer>
+  <div>Agent Trust Protocol v0.1 sandbox · MIT licensed</div>
+  <div><a href="/docs/quickstart">← Quickstart</a> · <a href="/docs/roadmap">Roadmap →</a></div>
+</footer>
+</body>
+</html>

@@ -30,9 +30,17 @@ export class TrustClient {
    * Publish the identity's DID document to the ledger so verifiers can
    * resolve its public key. Produces a W3C-compliant DID doc with a single
    * Ed25519 JsonWebKey2020 verification method (`#key-1`).
+   *
+   * Extended (non-standard) properties:
+   *   - name: human-friendly display name
+   *   - capabilities: string[] of capability tags
+   *   - registeredAt: ISO-8601 registration timestamp (set by the ledger if omitted)
    */
-  async publishIdentity(identity: Identity): Promise<{ published: string }> {
-    const doc = {
+  async publishIdentity(
+    identity: Identity,
+    meta: { capabilities?: string[]; registeredAt?: string } = {},
+  ): Promise<{ published: string }> {
+    const doc: Record<string, unknown> = {
       "@context": ["https://www.w3.org/ns/did/v1", "https://w3id.org/security/suites/jws-2020/v1"],
       id: identity.did,
       verificationMethod: [{
@@ -47,7 +55,10 @@ export class TrustClient {
       }],
       authentication: [`${identity.did}#key-1`],
       assertionMethod: [`${identity.did}#key-1`],
+      registeredAt: meta.registeredAt ?? new Date().toISOString(),
     };
+    if (identity.name) doc.name = identity.name;
+    if (meta.capabilities?.length) doc.capabilities = meta.capabilities;
     const res = await fetch(`${this.endpoint}/v1/dids`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -129,6 +140,20 @@ export class TrustClient {
   async query(args: { subject: DID }): Promise<QueryResult> {
     const res = await fetch(`${this.endpoint}/v1/subjects/${encodeURIComponent(args.subject)}`);
     if (!res.ok) throw new Error(`query failed: ${res.status}`);
+    return await res.json();
+  }
+
+  /** List all registered DID documents on the ledger. */
+  async listDids(): Promise<{ count: number; dids: any[] }> {
+    const res = await fetch(`${this.endpoint}/v1/dids`);
+    if (!res.ok) throw new Error(`listDids failed: ${res.status}`);
+    return await res.json();
+  }
+
+  /** Resolve a single DID document. */
+  async resolveDid(did: DID): Promise<any> {
+    const res = await fetch(`${this.endpoint}/v1/dids/${encodeURIComponent(did)}`);
+    if (!res.ok) throw new Error(`resolveDid failed: ${res.status}`);
     return await res.json();
   }
 }
